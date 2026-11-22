@@ -100,6 +100,8 @@ fail() { echo "FAIL: $*" >&2; exit 1; }
 setup() {
     mkdir -p "$BUILD" "$SRC" "$WRAP" "$LOGS" "$WARN" "$FILES"
 
+    # The build host's own environment, for host tools (migcom).
+    HOST_PATH="$PATH"
     [ -f "$SDK/env.sh" ] || fail "$SDK is not a GNUstep SDK (no env.sh)"
     export NEXTBSD_SDK="$SDK" NEXTBSD_CLANG_BINDIR="$CROSS_BINDIR"
     # shellcheck disable=SC1091
@@ -182,7 +184,11 @@ build_nextbsd_userland() {
     mkdir -p /usr/src/libexec/migcom /usr/src/libmach
     cp -a "$S/src/bootstrap_cmds/migcom.tproj/." /usr/src/libexec/migcom/
     cp -a "$S/src/libmach/include" /usr/src/libmach/
-    ( cd /usr/src && ./tools/build/make.py --cross-bindir="$CROSS_BINDIR" \
+    # With the build host's environment: env.sh's CC=clang and PATH would
+    # make the legacy stage compile host tools with the target's clang.
+    ( cd /usr/src && env -u CC -u CXX -u OBJC -u CONFIG_SITE -u PKG_CONFIG_LIBDIR \
+        -u PKG_CONFIG_PATH -u GNUSTEP_MAKEFILES -u GNUSTEP_CONFIG_FILE PATH="$HOST_PATH" \
+        ./tools/build/make.py --cross-bindir="$CROSS_BINDIR" \
         TARGET="$T" TARGET_ARCH="$TA" LOCAL_LEGACY_DIRS=libexec/migcom _legacy )
     local migcom
     migcom=$(find /usr/obj -path '*/legacy/usr/libexec/migcom' -type f 2>/dev/null | head -1)

@@ -5,7 +5,7 @@
 # the artifact's BUILD-INFO. "@sdk" means the commit the GNUstep SDK was built
 # from (the SDK's BUILD-INFO), so the WindowServer backend is the same libs-back
 # as the SDK's X11 one. Branches other than the default carry changes that are
-# open as pull requests on that repository (see README.md); they go back to the
+# open as pull requests on that repository (listed in the pull request that pins them); they go back to the
 # default branch once those are merged.
 #
 # nextbsd-userland is only read for MIG (src/bootstrap_cmds/migcom.tproj and
@@ -21,7 +21,7 @@ apps-terminal        https://github.com/nextbsd/apps-terminal.git        main
 apps-workspace       https://github.com/nextbsd/apps-workspace.git       main
 apps-dock            https://github.com/nextbsd/apps-dock.git            coreservices-workspace
 libs-innerspace      https://github.com/nextbsd/libs-innerspace.git      main
-apps-xlibre          https://github.com/nextbsd/apps-xlibre.git          master
+apps-xlibre          https://github.com/nextbsd/apps-xlibre.git          shadow-ivar-warning
 apps-settings        https://github.com/nextbsd/apps-settings.git        destdir-install
 apps-software        https://github.com/nextbsd/apps-software.git        coreservices-apps
 apps-update          https://github.com/nextbsd/apps-update.git          main

@@ -10,7 +10,7 @@ name: Build NextBSD desktop (cross)
 #
 # Per arch it produces:
 #   nextbsd-desktop-<arch>.tar.gz   the staged install, rooted at /, for
-#                                   nextbsd-pkg's NextBSD-desktop;
+#                                   nextbsd-pkg's NextBSD-desktop-apps;
 #   desktop-manifest-<arch>         MANIFEST (every staged path, with type,
 #                                   mode, size, SHA-256 and repository),
 #                                   LOCATIONS (where each app went) and

@@ -20,6 +20,10 @@
 #   /usr                           libWindowServerClient, its headers and .pc,
 #                                  and wsctl and the other WindowServer tools
 #                                  (/usr/libexec/WindowServer)
+#   /System/Library/Preferences/GlobalDefaults
+#                                  the desktop's system-wide GNUstep
+#                                  defaults, from this repository
+# Nothing goes into /etc: /etc/pam.d/loginwindow is nextbsd-overlays'.
 #
 # This is what pkgdemon/nextbsd-gnustep's build-windowserver.sh and
 # pkgdemon/nextbsd-gnustep-apps' install-apps.sh build on a machine, with the
@@ -251,7 +255,11 @@ gnustep_app() {
 # CoreServices for the system UI that isn't opened from Applications.
 CORESERVICES=/System/Library/CoreServices
 
-build_apps_loginwindow() { gnustep_app apps-loginwindow; }
+# loginwindow's PAM service goes to a scratch directory, not into the
+# stage: /etc is the admin's. nextbsd-overlays seeds /etc/pam.d/loginwindow
+# on new images, and NextBSD-desktop-apps' post-install writes it where it
+# is missing (nextbsd/nextbsd#676).
+build_apps_loginwindow() { gnustep_app apps-loginwindow PAM_DIR="$BUILD/pam.d-$T"; }
 build_nextbsd_theme()    { gnustep_app nextbsd-theme; }
 build_apps_terminal()    { gnustep_app apps-terminal; }
 build_apps_workspace()   { gnustep_app apps-workspace Workspace_INSTALL_DIR="$DESTDIR$CORESERVICES"; }
@@ -471,7 +479,18 @@ if [ "$REPOS" = "$ALL_REPOS" ]; then
     mkdir -p "$DESTDIR/System/Library/Preferences"
     install -m 644 "$INFO" "$DESTDIR/System/Library/Preferences/nextbsd-desktop-BUILD-INFO"
     echo /System/Library/Preferences/nextbsd-desktop-BUILD-INFO > "$FILES/nextbsd-desktop.txt"
+    # The desktop's system-wide GNUstep defaults, from this repository's
+    # System/Library/Preferences/GlobalDefaults (GSTheme NextBSD, ...).
+    # libs-base merges each plist there below every user's own defaults.
+    GD=/System/Library/Preferences/GlobalDefaults
+    mkdir -p "$DESTDIR$GD"
+    for f in "$ROOT$GD"/*.plist; do
+        install -m 644 "$f" "$DESTDIR$GD/"
+        echo "$GD/$(basename "$f")" >> "$FILES/nextbsd-desktop.txt"
+    done
+    grep -q '<key>GSTheme</key>' "$DESTDIR$GD/NSGlobalDomain.plist" || fail "no GSTheme in $GD/NSGlobalDomain.plist"
 fi
+[ ! -e "$DESTDIR/etc" ] || fail "the stage has /etc (it belongs to nextbsd-overlays): $(cd "$DESTDIR" && find etc -type f | tr '\n' ' ')"
 
 check_stage
 write_locations

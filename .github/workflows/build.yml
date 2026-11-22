@@ -1,0 +1,165 @@
+name: Build NextBSD desktop (cross)
+
+# Cross-builds the whole NextBSD desktop (nextbsd/nextbsd#675) for amd64 and
+# arm64 on the x86_64 runner, inside the per-arch nextbsd-toolchain container,
+# against the GNUstep SDK that nextbsd-gnustep publishes: WindowServer and its
+# client library and tools, libs-back's WindowServer backend, loginwindow,
+# Workspace, the Dock and its extras, Terminal, the settings apps, Software,
+# Update, Installer, XLibre, the InnerSpace modules and the theme, from the
+# commits in sources.lock. Nothing built for NextBSD runs here.
+#
+# Per arch it produces:
+#   nextbsd-desktop-<arch>.tar.gz   the staged install, rooted at /, for
+#                                   nextbsd-pkg's NextBSD-desktop;
+#   desktop-manifest-<arch>         MANIFEST (every staged path, with type,
+#                                   mode, size, SHA-256 and repository),
+#                                   LOCATIONS (where each app went) and
+#                                   BUILD-INFO (the commits);
+#   desktop-build-report-<arch>     build times, logs, each repository's
+#                                   warnings and the files it installed.
+#
+# Builds run on pull requests, pushes to main and by hand; a push to main or a
+# manual run from main also publishes the tarballs to the `continuous`
+# release. Nothing is dispatched to other repos.
+
+on:
+  push:
+    branches: [main]
+    paths: ['build-desktop.sh', 'fetch-sdk.sh', 'sources.lock', '.github/workflows/build.yml']
+  pull_request:
+    paths: ['build-desktop.sh', 'fetch-sdk.sh', 'sources.lock', '.github/workflows/build.yml']
+  workflow_dispatch:
+    inputs:
+      fbsd_sha:
+        description: 'Pinned FreeBSD SHA for the toolchain image tag (blank = latest)'
+        required: false
+        default: ''
+      sdk_run:
+        description: 'nextbsd-gnustep run id to take the SDK from (blank = continuous release)'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    name: desktop (${{ matrix.arch }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    container:
+      image: ghcr.io/nextbsd/nextbsd-toolchain:${{ matrix.arch }}-${{ inputs.fbsd_sha && format('fbsd-{0}', inputs.fbsd_sha) || 'latest' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # plmerge and pl2link for the build host: gnustep-make runs them on
+      # bundles and apps, and the SDK's own are NextBSD programs.
+      - name: Install build-host tools
+        run: |
+          apt-get update -qq
+          apt-get install -y --no-install-recommends gnustep-base-runtime
+          command -v plmerge pl2link gh curl
+
+      - name: Fetch the GNUstep SDK
+        env:
+          GH_TOKEN: ${{ github.token }}
+          T: ${{ matrix.arch }}
+          OUT: /opt/sdk
+          SDK_RUN: ${{ inputs.sdk_run }}
+        run: ./fetch-sdk.sh
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: desktop-ccache-${{ matrix.arch }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: desktop-ccache-${{ matrix.arch }}-
+
+      - name: Cross-build the desktop into /stage
+        env:
+          T: ${{ matrix.arch }}
+          SDK: /opt/sdk/nextbsd-gnustep-sdk-${{ matrix.arch }}
+          DESTDIR: /stage
+          CCACHE: '1'
+        run: |
+          export CCACHE_DIR="$GITHUB_WORKSPACE/.ccache" CCACHE_MAXSIZE=2G
+          export SDK_ORIGIN="$(cat /opt/sdk/SDK-ORIGIN)"
+          ccache -z
+          rc=0; ./build-desktop.sh || rc=$?
+          ccache -s
+          # The report is uploaded even on failure.
+          mkdir -p ".build/report-$T"
+          cp -R ".build/logs-$T" ".build/warnings-$T" ".build/files-$T" ".build/report-$T/" 2>/dev/null || true
+          cp ".build/times-$T.tsv" ".build/warnings-$T.tsv" ".build/BUILD-INFO-$T" ".build/report-$T/" 2>/dev/null || true
+          exit $rc
+
+      - name: Pack
+        env:
+          T: ${{ matrix.arch }}
+        run: |
+          mkdir -p .build/out ".build/manifest-$T"
+          tar -C /stage --numeric-owner --owner=0 --group=0 -czf ".build/out/nextbsd-desktop-$T.tar.gz" .
+          cp ".build/MANIFEST-$T.tsv" ".build/LOCATIONS-$T" ".build/BUILD-INFO-$T" ".build/manifest-$T/"
+          ls -la .build/out
+          {
+            echo "### NextBSD desktop cross-build, $T"
+            echo
+            echo "Staged: $(du -sh /stage | cut -f1), packed: $(du -h .build/out/nextbsd-desktop-$T.tar.gz | cut -f1), $(grep -c . .build/MANIFEST-$T.tsv) paths."
+            echo
+            echo "| repository | seconds | distinct warnings |"
+            echo "|---|---:|---:|"
+            awk -F'\t' 'NR == FNR { w[$2] = $3; next } { print "| " $2 " | " $3 " | " (($2 in w) ? w[$2] : "") " |" }' \
+              ".build/warnings-$T.tsv" ".build/times-$T.tsv"
+            echo
+            echo "Where each app went:"
+            echo
+            echo '```'
+            column -t -s "$(printf '\t')" ".build/LOCATIONS-$T" | grep -E 'CoreServices/|Applications/|Themes/|InnerSpace$|Bundles/|libexec/|/usr/lib/' | grep -v '/InnerSpace/' | head -80
+            echo '```'
+            echo
+            echo "Sources:"
+            echo
+            awk -F'\t' '{ print "- " $1 " " $3 " " substr($4, 1, 19) }' ".build/BUILD-INFO-$T"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nextbsd-desktop-${{ matrix.arch }}
+          path: .build/out/nextbsd-desktop-${{ matrix.arch }}.tar.gz
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-manifest-${{ matrix.arch }}
+          path: .build/manifest-${{ matrix.arch }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-build-report-${{ matrix.arch }}
+          path: .build/report-${{ matrix.arch }}
+          if-no-files-found: ignore
+
+  publish:
+    needs: build
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: nextbsd-desktop-*
+      - name: Gather artifacts
+        run: |
+          mkdir -p out
+          find artifacts -name 'nextbsd-desktop-*.tar.gz' -exec cp {} out/ \;
+          ls -la out/
+      - name: Publish to continuous release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: continuous
+          name: Continuous desktop build
+          prerelease: true
+          fail_on_unmatched_files: true
+          files: out/*.tar.gz

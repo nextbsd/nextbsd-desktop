@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The Dock's out-of-the-box placement and look (nextbsd/nextbsd#676): what
+  pkgdemon/nextbsd-gnustep-apps' install-apps.sh wrote into each user's
+  defaults. A user's own Dock settings win. Like every file in GlobalDefaults
+  these keys are read by every app; only the Dock uses them.
+
+    DockPlacement              2, right side, top (DockPlacementRightTop)
+    DockUseCellTileBackground  YES: each icon on a tile
+-->
+<plist version="1.0">
+<dict>
+	<key>DockPlacement</key>
+	<integer>2</integer>
+	<key>DockUseCellTileBackground</key>
+	<true/>
+</dict>
+</plist>

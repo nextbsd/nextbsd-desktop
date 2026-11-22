@@ -25,9 +25,9 @@ name: Build NextBSD desktop (cross)
 on:
   push:
     branches: [main]
-    paths: ['build-desktop.sh', 'fetch-sdk.sh', 'sources.lock', '.github/workflows/build.yml']
+    paths: ['build-desktop.sh', 'fetch-sdk.sh', 'sources.lock', 'System/**', '.github/workflows/build.yml']
   pull_request:
-    paths: ['build-desktop.sh', 'fetch-sdk.sh', 'sources.lock', '.github/workflows/build.yml']
+    paths: ['build-desktop.sh', 'fetch-sdk.sh', 'sources.lock', 'System/**', '.github/workflows/build.yml']
   workflow_dispatch:
     inputs:
       fbsd_sha:

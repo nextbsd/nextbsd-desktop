@@ -35,7 +35,8 @@ of `~/Applications`, and Workspace and the Dock in CoreServices:
 |---|---|
 | [apps-windowserver](https://github.com/nextbsd/apps-windowserver) | `/System/Library/CoreServices/WindowServer`, `ScreenCaptureAgent.app`; `/System/Library/LaunchDaemons/org.nextbsd.WindowServer.plist`, `LaunchAgents/org.nextbsd.ScreenCaptureAgent.plist`, `Preferences/org.nextbsd.WindowServer.plist`; `/usr/lib/libWindowServerClient.so.1` (and `.so`, `.a`), `/usr/include/WindowServer`, `/usr/libdata/pkgconfig/WindowServerClient.pc`; `/usr/libexec/WindowServer` (`wsctl`, `ws-session`, `wstest`, `wscapture` ...) |
 | [libs-back](https://github.com/nextbsd/libs-back) (the SDK's commit) | the WindowServer backend, `/System/Library/Bundles/libgnustep-nextbsd-032.bundle` (`Source/` only, beside NextBSD-gnustep's X11 backend) |
-| [apps-loginwindow](https://github.com/nextbsd/apps-loginwindow) | `/System/Library/CoreServices/loginwindow.app` (its LaunchDaemon plist inside it, not enabled); `/etc/pam.d/loginwindow` |
+| [apps-loginwindow](https://github.com/nextbsd/apps-loginwindow) | `/System/Library/CoreServices/loginwindow.app` (its LaunchDaemon plist inside it, not enabled). Its `/etc/pam.d/loginwindow` is not staged: nextbsd-overlays seeds it, and NextBSD-desktop-apps' post-install writes it where it is missing |
+| this repository | `/System/Library/Preferences/GlobalDefaults/NSGlobalDomain.plist` (`GSTheme` NextBSD, `GSBackHandlesWindowDecorations` NO, `GSSuppressAppIcon` YES, `GSWorkspaceApplication` Workspace) and `Dock.plist` (`DockPlacement` 2, `DockUseCellTileBackground` YES): the desktop's system-wide GNUstep defaults, below each user's own |
 | [nextbsd-theme](https://github.com/nextbsd/nextbsd-theme) | `/System/Library/Themes/NextBSD.theme`; its fonts in `/System/Library/Fonts` |
 | [apps-terminal](https://github.com/nextbsd/apps-terminal) | `/System/Applications/Terminal.app` |
 | [apps-workspace](https://github.com/nextbsd/apps-workspace) | `/System/Library/CoreServices/Workspace.app` |
@@ -49,8 +50,8 @@ of `~/Applications`, and Workspace and the Dock in CoreServices:
 
 gnustep-make also links each app into `/System/Library/Tools` (`Terminal`,
 `DateTime` ...), as it does for every installed app. Outside `/System` the
-build has only libWindowServerClient and the WindowServer tools in `/usr`, and
-`/etc/pam.d/loginwindow`. Xnextbsd needs `libepoxy.so.0` from
+build has only libWindowServerClient and the WindowServer tools in `/usr`;
+nothing goes into `/etc`. Xnextbsd needs `libepoxy.so.0` from
 `NextBSD-xlibre` at run time, the one library that isn't in the SDK's sysroot;
 the CI checks list it in `RUNTIME-DEPS-<arch>`.
 

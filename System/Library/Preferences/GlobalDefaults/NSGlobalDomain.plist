@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The NextBSD desktop's system-wide GNUstep defaults (nextbsd/nextbsd#676).
+
+  libs-base merges every plist in /System/Library/Preferences/GlobalDefaults
+  (the folder beside the system GNUstep.conf) into the GSConfigDomain, which
+  comes after each user's NSGlobalDomain: a value a user sets with
+  `defaults write NSGlobalDomain ...` wins. loginwindow's session keeps this
+  folder. The file name only says which domain the keys are meant for; every
+  key here applies to every app.
+
+    GSTheme                         the NextBSD theme. GNUstep's own theme
+                                    wants Helvetica and Courier, which
+                                    NextBSD doesn't ship (nextbsd/nextbsd#648)
+    GSBackHandlesWindowDecorations  NO: the theme draws the window frames
+    GSSuppressAppIcon               YES: apps show no app icon of their own;
+                                    the Dock shows them, as on NeXTSTEP
+    GSWorkspaceApplication          Workspace: NSWorkspace hands files and
+                                    folders to Workspace.app
+-->
+<plist version="1.0">
+<dict>
+	<key>GSTheme</key>
+	<string>NextBSD</string>
+	<key>GSBackHandlesWindowDecorations</key>
+	<string>NO</string>
+	<key>GSSuppressAppIcon</key>
+	<string>YES</string>
+	<key>GSWorkspaceApplication</key>
+	<string>Workspace</string>
+</dict>
+</plist>

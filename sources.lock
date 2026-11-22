@@ -1,0 +1,28 @@
+# The NextBSD desktop, in build order.
+# name               repository                                          ref
+#
+# ref is the branch build-desktop.sh clones; the commit it got is recorded in
+# the artifact's BUILD-INFO. "@sdk" means the commit the GNUstep SDK was built
+# from (the SDK's BUILD-INFO), so the WindowServer backend is the same libs-back
+# as the SDK's X11 one. Branches other than the default carry changes that are
+# open as pull requests on that repository (listed in the pull request that pins them); they go back to the
+# default branch once those are merged.
+#
+# nextbsd-userland is only read for MIG (src/bootstrap_cmds/migcom.tproj and
+# src/libmach/include): migcom is built for the build host, as
+# nextbsd-userland's own cross build does, to make the settings apps' and the
+# Dock extras' MIG client stubs. Nothing from it is installed.
+nextbsd-userland     https://github.com/nextbsd/nextbsd-userland.git     main
+apps-windowserver    https://github.com/nextbsd/apps-windowserver.git    main
+libs-back            https://github.com/nextbsd/libs-back.git            @sdk
+apps-loginwindow     https://github.com/nextbsd/apps-loginwindow.git     main
+nextbsd-theme        https://github.com/nextbsd/nextbsd-theme.git        main
+apps-terminal        https://github.com/nextbsd/apps-terminal.git        main
+apps-workspace       https://github.com/nextbsd/apps-workspace.git       main
+apps-dock            https://github.com/nextbsd/apps-dock.git            main
+libs-innerspace      https://github.com/nextbsd/libs-innerspace.git      main
+apps-xlibre          https://github.com/nextbsd/apps-xlibre.git          master
+apps-settings        https://github.com/nextbsd/apps-settings.git        main
+apps-software        https://github.com/nextbsd/apps-software.git        main
+apps-update          https://github.com/nextbsd/apps-update.git          main
+apps-installer       https://github.com/nextbsd/apps-installer.git       main

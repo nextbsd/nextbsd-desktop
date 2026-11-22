@@ -69,6 +69,17 @@ jobs:
           SDK_RUN: ${{ inputs.sdk_run }}
         run: ./fetch-sdk.sh
 
+      # Other NextBSD packages the desktop runs on beyond the SDK's sysroot,
+      # for the checks only: nextbsd-xlibre has Xnextbsd's libepoxy.
+      - name: Fetch run-time packages for the checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+          A: ${{ matrix.arch }}
+        run: |
+          mkdir -p /opt/runtime/nextbsd-xlibre /opt/runtime/dl
+          gh release download continuous --repo nextbsd/nextbsd-xlibre --pattern "nextbsd-xlibre-$A.tar.gz" --dir /opt/runtime/dl
+          tar -C /opt/runtime/nextbsd-xlibre -xzf "/opt/runtime/dl/nextbsd-xlibre-$A.tar.gz"
+
       - name: Restore ccache
         uses: actions/cache@v4
         with:
@@ -82,6 +93,7 @@ jobs:
           SDK: /opt/sdk/nextbsd-gnustep-sdk-${{ matrix.arch }}
           DESTDIR: /stage
           CCACHE: '1'
+          RUNTIME_ROOTS: nextbsd-xlibre=/opt/runtime/nextbsd-xlibre
         run: |
           export CCACHE_DIR="$GITHUB_WORKSPACE/.ccache" CCACHE_MAXSIZE=2G
           export SDK_ORIGIN="$(cat /opt/sdk/SDK-ORIGIN)"
@@ -100,7 +112,7 @@ jobs:
         run: |
           mkdir -p .build/out ".build/manifest-$T"
           tar -C /stage --numeric-owner --owner=0 --group=0 -czf ".build/out/nextbsd-desktop-$T.tar.gz" .
-          cp ".build/MANIFEST-$T.tsv" ".build/LOCATIONS-$T" ".build/BUILD-INFO-$T" ".build/manifest-$T/"
+          cp ".build/MANIFEST-$T.tsv" ".build/LOCATIONS-$T" ".build/BUILD-INFO-$T" ".build/RUNTIME-DEPS-$T" ".build/manifest-$T/"
           ls -la .build/out
           {
             echo "### NextBSD desktop cross-build, $T"

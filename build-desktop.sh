@@ -46,6 +46,10 @@
 #   DESTDIR       the staging root (default /stage)
 #   CCACHE        non-empty: compile through ccache
 #   XNEXTBSD      a local Xnextbsd binary to use instead of downloading one
+#   RUNTIME_ROOTS space-separated <package>=<dir>: other NextBSD packages'
+#                 staged trees (nextbsd-xlibre for Xnextbsd's libepoxy), which
+#                 the checks resolve DT_NEEDED against after the SDK; what is
+#                 found there goes to RUNTIME-DEPS-<arch>
 #
 # Usage:
 #   ./build-desktop.sh                 everything, in sources.lock order
@@ -68,6 +72,7 @@ set -euo pipefail
 : "${DESTDIR:=/stage}"
 : "${CCACHE:=}"
 : "${XNEXTBSD:=}"
+: "${RUNTIME_ROOTS:=}"
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD="$ROOT/.build"
@@ -318,7 +323,8 @@ collect_warnings() {
 check_stage() {
     comp "checking $DESTDIR"
     local readelf="$CROSS_BINDIR/llvm-readelf" f dyn n d found bad=0 count=0 devlink= target dir
-    local libdirs="$SDK/lib $SDK/usr/lib $SDK/usr/lib/system $SDK/usr/X11/lib"
+    local libdirs="$SDK/lib $SDK/usr/lib $SDK/usr/lib/system $SDK/usr/X11/lib" r deps="$BUILD/RUNTIME-DEPS-$T"
+    : > "$deps"
     while IFS= read -r -d '' f; do
         head -c 4 "$f" | grep -q 'ELF' || continue
         count=$((count + 1))
@@ -338,11 +344,25 @@ check_stage() {
             for d in $libdirs; do
                 [ -e "$d/$n" ] && { found=1; break; }
             done
-            [ -n "$found" ] || [ -n "$(find "$SDK/System" "$DESTDIR" -name "$n" -print -quit)" ] ||
-                { echo "  ${f#"$DESTDIR"}: DT_NEEDED $n is in neither the SDK nor the stage"; bad=1; }
+            [ -n "$found" ] || [ -n "$(find "$SDK/System" "$DESTDIR" -name "$n" -print -quit)" ] && continue
+            for r in $RUNTIME_ROOTS; do
+                for d in lib usr/lib usr/lib/system usr/X11/lib; do
+                    if [ -e "${r#*=}/$d/$n" ]; then
+                        printf '%s\t/%s/%s\t%s\n' "${r%%=*}" "$d" "$n" "${f#"$DESTDIR"}" >> "$deps"
+                        found=1
+                        break 2
+                    fi
+                done
+            done
+            [ -n "$found" ] ||
+                { echo "  ${f#"$DESTDIR"}: DT_NEEDED $n is in neither the SDK, the stage nor $RUNTIME_ROOTS"; bad=1; }
         done
     done < <(find "$DESTDIR" -type f -print0)
     note "$count ELF files are $WANT_MACHINE"
+    if [ -s "$deps" ]; then
+        note "libraries from packages outside the SDK (RUNTIME-DEPS-$T):"
+        sort -u "$deps" | sed 's/^/        /'
+    fi
     [ -z "$devlink" ] || note "RPATH/RUNPATH /Developer/Link (link-time only; nothing there at run time):$devlink"
 
     if grep -rIl -e "$SDK" -e "$BUILD" -e "$DESTDIR/" "$DESTDIR" 2>/dev/null | grep -q .; then

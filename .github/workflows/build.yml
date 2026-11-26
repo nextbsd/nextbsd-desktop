@@ -178,11 +178,32 @@ jobs:
           mkdir -p out
           find artifacts -name 'nextbsd-desktop-*.tar.gz' -exec cp {} out/ \;
           ls -la out/
+      # Each tarball goes up under a temporary name and is then swapped in:
+      # the old one stays downloadable until the new one is complete, so a
+      # nextbsd-pkg build reading the release at that moment isn't left
+      # without the desktop. The gap is the delete and rename, under a second.
       - name: Publish to continuous release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: continuous
-          name: Continuous desktop build
-          prerelease: true
-          fail_on_unmatched_files: true
-          files: out/*.tar.gz
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -eu
+          ls out/*.tar.gz
+          if ! gh release view continuous >/dev/null 2>&1; then
+            gh release create continuous --prerelease \
+              --title "Continuous desktop build" --notes "" --target "$GITHUB_SHA"
+          fi
+          for f in out/*.tar.gz; do
+            name=$(basename "$f")
+            cp "$f" "out/$name.new"
+            gh release upload continuous "out/$name.new" --clobber
+            new=$(gh api "repos/$GH_REPO/releases/tags/continuous" \
+                    --jq ".assets[] | select(.name == \"$name.new\") | .id")
+            old=$(gh api "repos/$GH_REPO/releases/tags/continuous" \
+                    --jq ".assets[] | select(.name == \"$name\") | .id")
+            if [ -n "$old" ]; then
+              gh api -X DELETE "repos/$GH_REPO/releases/assets/$old"
+            fi
+            gh api -X PATCH "repos/$GH_REPO/releases/assets/$new" -f name="$name" >/dev/null
+            echo "published $name"
+          done

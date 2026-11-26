@@ -47,6 +47,7 @@ of `~/Applications`, and Workspace and the Dock in CoreServices:
 | [apps-software](https://github.com/nextbsd/apps-software) | `/System/Applications/Software.app` |
 | [apps-update](https://github.com/nextbsd/apps-update) | `/System/Applications/Update.app` |
 | [apps-installer](https://github.com/nextbsd/apps-installer) | `/System/Applications/Installer.app` |
+| [apps-textedit](https://github.com/nextbsd/apps-textedit) | `/System/Applications/TextEdit.app` |
 
 gnustep-make also links each app into `/System/Library/Tools` (`Terminal`,
 `DateTime` ...), as it does for every installed app. Outside `/System` the

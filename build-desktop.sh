@@ -395,6 +395,36 @@ check_stage() {
     note "no build-host paths; every DT_NEEDED resolves; no stray RPATH; no dangling symlink"
 }
 
+# What the desktop can't run without. A repository that loses files from its
+# source still builds (nextbsd-theme #28 dropped the fonts and the step that
+# installs its images, and every app then drew no text), so the stage is
+# checked for them by name before anything is published.
+REQUIRED_FILES="
+/System/Library/Fonts/Inter-Regular.ttf
+/System/Library/Fonts/Inter-Bold.ttf
+/System/Library/Fonts/Inter-SemiBold.ttf
+/System/Library/Fonts/JetBrainsMono-Regular.ttf
+/System/Library/Fonts/JetBrainsMono-Bold.ttf
+/System/Library/Themes/NextBSD.theme/NextBSD
+/System/Library/Themes/NextBSD.theme/Resources/ThemeImages/Folder.png
+/System/Library/Themes/NextBSD.theme/Resources/ThemeImages/common_Folder.png
+/System/Library/Themes/NextBSD.theme/Resources/ThemeImages/NextBSDMenu.png
+/System/Library/CoreServices/WindowServer
+/System/Library/CoreServices/loginwindow.app/loginwindow
+/System/Library/CoreServices/Workspace.app/Workspace
+/System/Library/CoreServices/Dock.app/Dock
+"
+
+check_required() {
+    comp "checking the desktop's required files"
+    local f missing=
+    for f in $REQUIRED_FILES; do
+        [ -s "$DESTDIR$f" ] || missing="$missing $f"
+    done
+    [ -z "$missing" ] || fail "the stage is missing:$missing"
+    note "$(echo $REQUIRED_FILES | wc -w | tr -d ' ') required files are there"
+}
+
 # Where each repository's things went: what it installed directly inside the
 # folders the desktop shares with the system (one line per app, bundle, tool
 # or library), and any other file it installed elsewhere.
@@ -494,6 +524,7 @@ fi
 [ ! -e "$DESTDIR/etc" ] || fail "the stage has /etc (it belongs to nextbsd-overlays): $(cd "$DESTDIR" && find etc -type f | tr '\n' ' ')"
 
 check_stage
+check_required
 write_locations
 write_manifest
 comp "done in $((total1 - total0))s"

@@ -18,6 +18,11 @@
                                     the Dock shows them, as on NeXTSTEP
     GSWorkspaceApplication          Workspace: NSWorkspace hands files and
                                     folders to Workspace.app
+    GSHelpViewer                    Help.app, by its full path (it is in
+                                    CoreServices, outside the folders
+                                    GNUstep registers apps from): an app's
+                                    Help menu (-showHelp:) opens its .help
+                                    book there (nextbsd/nextbsd#714)
 -->
 <plist version="1.0">
 <dict>
@@ -29,5 +34,7 @@
 	<string>YES</string>
 	<key>GSWorkspaceApplication</key>
 	<string>Workspace</string>
+	<key>GSHelpViewer</key>
+	<string>/System/Library/CoreServices/Help.app</string>
 </dict>
 </plist>

@@ -10,9 +10,9 @@
 #   /System/Library/CoreServices   WindowServer, ScreenCaptureAgent.app,
 #                                  loginwindow.app, Workspace.app, Dock.app,
 #                                  Help.app
-#   /System/Applications           Terminal, TextEdit, Video, Scanner, the
-#                                  settings apps, Software, Update, Installer,
-#                                  XLibre
+#   /System/Applications           Terminal, TextEdit, Video, Scanner,
+#                                  Preview, the settings apps, Software,
+#                                  Update, Installer, XLibre
 #   /System/Library/...            the WindowServer backend
 #                                  (Bundles/libgnustep-nextbsd-*.bundle), the
 #                                  theme (Themes/NextBSD.theme, its Fonts),
@@ -280,6 +280,10 @@ build_apps_video()       { gnustep_app apps-video; }
 # NextBSD-gnustep-support's sane-backends puts it; the backends and their
 # configuration are that package's, at run time.
 build_apps_scanner()     { gnustep_app apps-scanner; }
+
+# Preview renders PDFs with poppler-cpp: libpoppler-cpp.so.3 and its
+# headers (poppler/cpp) from NextBSD-gnustep-support, in the SDK's sysroot.
+build_apps_preview()     { gnustep_app apps-preview; }
 
 # Update compiles in apps-settings' NBSettings, from the checkout built
 # above (install-apps.sh clones them side by side).

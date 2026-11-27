@@ -30,3 +30,4 @@ apps-textedit        https://github.com/nextbsd/apps-textedit.git        main
 apps-help            https://github.com/nextbsd/apps-help.git            main
 apps-video           https://github.com/nextbsd/apps-video.git           main
 apps-scanner         https://github.com/nextbsd/apps-scanner.git         main
+apps-preview         https://github.com/nextbsd/apps-preview.git         main

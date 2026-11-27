@@ -51,6 +51,7 @@ of `~/Applications`, and Workspace, the Dock and Help in CoreServices:
 | [apps-help](https://github.com/nextbsd/apps-help) | `/System/Library/CoreServices/Help.app`, with NextBSD Help (`Resources/NextBSD.help`) |
 | [apps-video](https://github.com/nextbsd/apps-video) | `/System/Applications/Video.app` (plays and records with the SDK's ffmpeg libraries) |
 | [apps-scanner](https://github.com/nextbsd/apps-scanner) | `/System/Applications/Scanner.app`; links `libsane.so.1` from NextBSD-gnustep-support (sane-backends) |
+| [apps-preview](https://github.com/nextbsd/apps-preview) | `/System/Applications/Preview.app`; links `libpoppler-cpp.so.3` from NextBSD-gnustep-support (poppler) |
 
 gnustep-make also links each app into `/System/Library/Tools` (`Terminal`,
 `DateTime` ...), as it does for every installed app. Outside `/System` the

@@ -9,8 +9,8 @@
 #
 #   /System/Library/CoreServices   WindowServer, ScreenCaptureAgent.app,
 #                                  loginwindow.app, Workspace.app, Dock.app
-#   /System/Applications           Terminal, TextEdit, the settings apps,
-#                                  Software, Update, Installer, XLibre
+#   /System/Applications           Terminal, TextEdit, Scanner, the settings
+#                                  apps, Software, Update, Installer, XLibre
 #   /System/Library/...            the WindowServer backend
 #                                  (Bundles/libgnustep-nextbsd-*.bundle), the
 #                                  theme (Themes/NextBSD.theme, its Fonts),
@@ -269,6 +269,11 @@ build_apps_settings()    { gnustep_app apps-settings; }
 build_apps_software()    { gnustep_app apps-software; }
 build_apps_installer()   { gnustep_app apps-installer; }
 build_apps_textedit()    { gnustep_app apps-textedit; }
+
+# Scanner links libsane.so.1 (and zlib) from the SDK's sysroot, where
+# NextBSD-gnustep-support's sane-backends puts it; the backends and their
+# configuration are that package's, at run time.
+build_apps_scanner()     { gnustep_app apps-scanner; }
 
 # Update compiles in apps-settings' NBSettings, from the checkout built
 # above (install-apps.sh clones them side by side).

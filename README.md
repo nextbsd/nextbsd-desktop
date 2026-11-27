@@ -48,6 +48,7 @@ of `~/Applications`, and Workspace and the Dock in CoreServices:
 | [apps-update](https://github.com/nextbsd/apps-update) | `/System/Applications/Update.app` |
 | [apps-installer](https://github.com/nextbsd/apps-installer) | `/System/Applications/Installer.app` |
 | [apps-textedit](https://github.com/nextbsd/apps-textedit) | `/System/Applications/TextEdit.app` |
+| [apps-scanner](https://github.com/nextbsd/apps-scanner) | `/System/Applications/Scanner.app`; links `libsane.so.1` from NextBSD-gnustep-support (sane-backends) |
 
 gnustep-make also links each app into `/System/Library/Tools` (`Terminal`,
 `DateTime` ...), as it does for every installed app. Outside `/System` the

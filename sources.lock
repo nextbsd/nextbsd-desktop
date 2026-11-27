@@ -27,3 +27,4 @@ apps-software        https://github.com/nextbsd/apps-software.git        main
 apps-update          https://github.com/nextbsd/apps-update.git          main
 apps-installer       https://github.com/nextbsd/apps-installer.git       main
 apps-textedit        https://github.com/nextbsd/apps-textedit.git        main
+apps-scanner         https://github.com/nextbsd/apps-scanner.git         e41/717-scanner

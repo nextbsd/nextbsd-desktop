@@ -28,3 +28,4 @@ apps-update          https://github.com/nextbsd/apps-update.git          main
 apps-installer       https://github.com/nextbsd/apps-installer.git       main
 apps-textedit        https://github.com/nextbsd/apps-textedit.git        main
 apps-help            https://github.com/nextbsd/apps-help.git            main
+apps-video           https://github.com/nextbsd/apps-video.git           main

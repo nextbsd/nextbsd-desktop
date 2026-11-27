@@ -10,7 +10,7 @@
 #   /System/Library/CoreServices   WindowServer, ScreenCaptureAgent.app,
 #                                  loginwindow.app, Workspace.app, Dock.app,
 #                                  Help.app
-#   /System/Applications           Terminal, TextEdit, the settings apps,
+#   /System/Applications           Terminal, TextEdit, Video, the settings apps,
 #                                  Software, Update, Installer, XLibre
 #   /System/Library/...            the WindowServer backend
 #                                  (Bundles/libgnustep-nextbsd-*.bundle), the
@@ -273,6 +273,7 @@ build_apps_textedit()    { gnustep_app apps-textedit; }
 # Help, with NextBSD Help in it; every app's Help menu opens it
 # (GSHelpViewer in GlobalDefaults/NSGlobalDomain.plist).
 build_apps_help()        { gnustep_app apps-help Help_INSTALL_DIR="$DESTDIR$CORESERVICES"; }
+build_apps_video()       { gnustep_app apps-video; }
 
 # Update compiles in apps-settings' NBSettings, from the checkout built
 # above (install-apps.sh clones them side by side).

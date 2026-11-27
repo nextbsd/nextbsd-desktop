@@ -8,7 +8,8 @@
 # out as the packaged desktop is installed:
 #
 #   /System/Library/CoreServices   WindowServer, ScreenCaptureAgent.app,
-#                                  loginwindow.app, Workspace.app, Dock.app
+#                                  loginwindow.app, Workspace.app, Dock.app,
+#                                  Help.app
 #   /System/Applications           Terminal, TextEdit, Video, the settings apps,
 #                                  Software, Update, Installer, XLibre
 #   /System/Library/...            the WindowServer backend
@@ -28,7 +29,7 @@
 # This is what pkgdemon/nextbsd-gnustep's build-windowserver.sh and
 # pkgdemon/nextbsd-gnustep-apps' install-apps.sh build on a machine, with the
 # same flags, except that every app goes into the SYSTEM domain instead of
-# ~/Applications, and Workspace and the Dock into CoreServices.
+# ~/Applications, and Workspace, the Dock and Help into CoreServices.
 #
 # How it cross-builds: the SDK's env.sh sets everything up (clang and clang++
 # for the target against the SDK's sysroot, /System linked to the SDK's
@@ -269,6 +270,9 @@ build_apps_settings()    { gnustep_app apps-settings; }
 build_apps_software()    { gnustep_app apps-software; }
 build_apps_installer()   { gnustep_app apps-installer; }
 build_apps_textedit()    { gnustep_app apps-textedit; }
+# Help, with NextBSD Help in it; every app's Help menu opens it
+# (GSHelpViewer in GlobalDefaults/NSGlobalDomain.plist).
+build_apps_help()        { gnustep_app apps-help Help_INSTALL_DIR="$DESTDIR$CORESERVICES"; }
 build_apps_video()       { gnustep_app apps-video; }
 
 # Update compiles in apps-settings' NBSettings, from the checkout built

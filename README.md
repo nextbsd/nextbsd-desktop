@@ -7,7 +7,7 @@ userland.
 
 | Installed in | What |
 |---|---|
-| `/System/Library/CoreServices` | WindowServer, ScreenCaptureAgent, loginwindow, Workspace, the Dock |
+| `/System/Library/CoreServices` | WindowServer, ScreenCaptureAgent, loginwindow, Workspace, the Dock, Help |
 | `/System/Applications` | Terminal, the settings apps, Software, Update, Installer, XLibre |
 | `/System/Library` | the WindowServer backend, the InnerSpace modules, the NextBSD theme, the Dock extras |
 
@@ -29,14 +29,14 @@ and [#676](https://github.com/nextbsd/nextbsd/issues/676) (epic
 In `sources.lock` order, with what pkgdemon/nextbsd-gnustep's
 `build-windowserver.sh` and pkgdemon/nextbsd-gnustep-apps' `install-apps.sh` do
 on a machine, except that every app is installed in the SYSTEM domain instead
-of `~/Applications`, and Workspace and the Dock in CoreServices:
+of `~/Applications`, and Workspace, the Dock and Help in CoreServices:
 
 | Repository | Installs |
 |---|---|
 | [apps-windowserver](https://github.com/nextbsd/apps-windowserver) | `/System/Library/CoreServices/WindowServer`, `ScreenCaptureAgent.app`; `/System/Library/LaunchDaemons/org.nextbsd.WindowServer.plist`, `LaunchAgents/org.nextbsd.ScreenCaptureAgent.plist`, `Preferences/org.nextbsd.WindowServer.plist`; `/usr/lib/libWindowServerClient.so.1` (and `.so`, `.a`), `/usr/include/WindowServer`, `/usr/libdata/pkgconfig/WindowServerClient.pc`; `/usr/libexec/WindowServer` (`wsctl`, `ws-session`, `wstest`, `wscapture` ...) |
 | [libs-back](https://github.com/nextbsd/libs-back) (the SDK's commit) | the WindowServer backend, `/System/Library/Bundles/libgnustep-nextbsd-032.bundle` (`Source/` only, beside NextBSD-gnustep's X11 backend) |
 | [apps-loginwindow](https://github.com/nextbsd/apps-loginwindow) | `/System/Library/CoreServices/loginwindow.app` (its LaunchDaemon plist inside it, not enabled). Its `/etc/pam.d/loginwindow` is not staged: nextbsd-overlays seeds it, and NextBSD-desktop-apps' post-install writes it where it is missing |
-| this repository | `/System/Library/Preferences/GlobalDefaults/NSGlobalDomain.plist` (`GSTheme` NextBSD, `GSBackHandlesWindowDecorations` NO, `GSSuppressAppIcon` YES, `GSWorkspaceApplication` Workspace) and `Dock.plist` (`DockPlacement` 2, `DockUseCellTileBackground` YES): the desktop's system-wide GNUstep defaults, below each user's own |
+| this repository | `/System/Library/Preferences/GlobalDefaults/NSGlobalDomain.plist` (`GSTheme` NextBSD, `GSBackHandlesWindowDecorations` NO, `GSSuppressAppIcon` YES, `GSWorkspaceApplication` Workspace, `GSHelpViewer` Help.app) and `Dock.plist` (`DockPlacement` 2, `DockUseCellTileBackground` YES): the desktop's system-wide GNUstep defaults, below each user's own |
 | [nextbsd-theme](https://github.com/nextbsd/nextbsd-theme) | `/System/Library/Themes/NextBSD.theme`; its fonts in `/System/Library/Fonts` |
 | [apps-terminal](https://github.com/nextbsd/apps-terminal) | `/System/Applications/Terminal.app` |
 | [apps-workspace](https://github.com/nextbsd/apps-workspace) | `/System/Library/CoreServices/Workspace.app` |
@@ -48,6 +48,7 @@ of `~/Applications`, and Workspace and the Dock in CoreServices:
 | [apps-update](https://github.com/nextbsd/apps-update) | `/System/Applications/Update.app` |
 | [apps-installer](https://github.com/nextbsd/apps-installer) | `/System/Applications/Installer.app` |
 | [apps-textedit](https://github.com/nextbsd/apps-textedit) | `/System/Applications/TextEdit.app` |
+| [apps-help](https://github.com/nextbsd/apps-help) | `/System/Library/CoreServices/Help.app`, with NextBSD Help (`Resources/NextBSD.help`) |
 | [apps-video](https://github.com/nextbsd/apps-video) | `/System/Applications/Video.app` (plays and records with the SDK's ffmpeg libraries) |
 
 gnustep-make also links each app into `/System/Library/Tools` (`Terminal`,
@@ -78,9 +79,9 @@ T=arm64 SDK=/opt/sdk/nextbsd-gnustep-sdk-arm64 DESTDIR=/stage ./build-desktop.sh
   `bootstrap_cmds`), as nextbsd-userland's own cross build does, and `mig`
   runs it with the target's clang as the preprocessor, for the settings apps'
   and the Dock extras' MIG client stubs.
-- Workspace and the Dock go to CoreServices with `Workspace_INSTALL_DIR` and
-  `Dock_INSTALL_DIR` on the install command line; everything else goes where
-  its makefile puts it in the SYSTEM domain.
+- Workspace, the Dock and Help go to CoreServices with `Workspace_INSTALL_DIR`,
+  `Dock_INSTALL_DIR` and `Help_INSTALL_DIR` on the install command line;
+  everything else goes where its makefile puts it in the SYSTEM domain.
 
 The checks after the build: every ELF file is for the target, its
 RPATH/RUNPATH stays in `/System` and `/usr`, and each `DT_NEEDED` is in the

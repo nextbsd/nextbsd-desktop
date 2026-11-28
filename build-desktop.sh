@@ -285,6 +285,10 @@ build_apps_scanner()     { gnustep_app apps-scanner; }
 # headers (poppler/cpp) from NextBSD-gnustep-support, in the SDK's sysroot.
 build_apps_preview()     { gnustep_app apps-preview; }
 
+# Server links libdns_sd for Bonjour; the work is serveradmin's
+# (nextbsd-userland), on each computer it manages.
+build_apps_server()      { gnustep_app apps-server; }
+
 # Update compiles in apps-settings' NBSettings, from the checkout built
 # above (install-apps.sh clones them side by side).
 build_apps_update() {
